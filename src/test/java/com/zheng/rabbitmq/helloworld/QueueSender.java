@@ -15,8 +15,8 @@ public class QueueSender {
     
     public static void main(String[] args) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("zl52");
-        factory.setPort(5672);
+        factory.setHost(Constants.HOST);
+        factory.setPort(Constants.PORT);
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
