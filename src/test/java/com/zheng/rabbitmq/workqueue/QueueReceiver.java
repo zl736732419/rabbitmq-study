@@ -31,7 +31,7 @@ public class QueueReceiver {
         // 队列是否持久化
         boolean durable = true;
         
-        channel.queueDeclare(Constants.QUEUE_NAME, durable, false, false, null);
+        channel.queueDeclare(Constants.DURABLE_QUEUE_NAME, durable, false, false, null);
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
         // 设置消费者预取的数量，
@@ -66,7 +66,7 @@ public class QueueReceiver {
 //        boolean autoAck = true;
         // 消费者手动确认消息
         boolean autoAck = false;
-        channel.basicConsume(Constants.QUEUE_NAME, autoAck, consumer);
+        channel.basicConsume(Constants.DURABLE_QUEUE_NAME, autoAck, consumer);
     }
 
     private static void doWork(String task) throws InterruptedException {

@@ -32,13 +32,13 @@ public class QueueSender {
         // 队列是否持久化
         boolean durable = true;
         
-        channel.queueDeclare(Constants.QUEUE_NAME, durable, false, false, null);
+        channel.queueDeclare(Constants.DURABLE_QUEUE_NAME, durable, false, false, null);
         
         String message = getMessage(args);
         
         // 消息持久化
         AMQP.BasicProperties props = MessageProperties.PERSISTENT_TEXT_PLAIN;
-        channel.basicPublish("", Constants.QUEUE_NAME, props, message.getBytes(StandardCharsets.UTF_8));
+        channel.basicPublish("", Constants.DURABLE_QUEUE_NAME, props, message.getBytes(StandardCharsets.UTF_8));
         System.out.println(" [x] Sent '" + message + "'");
 
         channel.close();
