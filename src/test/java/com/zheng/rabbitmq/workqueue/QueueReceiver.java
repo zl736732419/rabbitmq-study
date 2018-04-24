@@ -30,7 +30,6 @@ public class QueueReceiver {
 
         // 队列是否持久化
         boolean durable = true;
-        
         channel.queueDeclare(Constants.DURABLE_QUEUE_NAME, durable, false, false, null);
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
