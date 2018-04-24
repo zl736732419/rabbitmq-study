@@ -16,7 +16,8 @@ import java.nio.charset.StandardCharsets;
  * 需要注意的是，单纯的仅仅只是设置消息的持久化属性，并不能完全保证消息真正就持久化了，因为消息在保存到磁盘这个过程还需要短暂的时间
  * rabbitmq默认只是将消息保存到内存缓存中，然后再批量刷进磁盘，所以这个过程中如果rabbitmq挂了，那么消息并没有真正保存到磁盘，
  * 如果需要实现强消息持久化，需要使用生产者消息确认机制
- * @Author Administrator
+ * 
+ * @Author zhenglian
  * @Date 2018/4/24 16:45
  */
 public class QueueSender {

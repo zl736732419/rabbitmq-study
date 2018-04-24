@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * @Author Administrator
+ * @Author zhenglian
  * @Date 2018/4/24 16:56
  */
 public class QueueReceiver {
