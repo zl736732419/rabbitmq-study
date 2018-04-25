@@ -48,7 +48,6 @@ public class QueueReceiver {
                 String message = new String(body, StandardCharsets.UTF_8);
                 System.out.println(" [x] Received '" + message + "'");
 
-
                 try {
                     doWork(message);
                 } catch (InterruptedException e) {
@@ -60,6 +59,7 @@ public class QueueReceiver {
                 }
             }
         };
+        
         // 消息自动确认，使用自动确认后当消费者接收到消息后就会立马对该消息进行确认，broker就会可以删除当前消息，
         // 但是如果消费者在处理消息的过程中挂掉了，也就是说这个消息还没有被消费完成，那么这个消息也就丢失了，无法再被其他消费者消费
 //        boolean autoAck = true;
