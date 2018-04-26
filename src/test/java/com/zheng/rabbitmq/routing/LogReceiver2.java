@@ -17,7 +17,8 @@ import java.nio.charset.StandardCharsets;
  * @Date 2018/4/25 23:53
  */
 public class LogReceiver2 {
-    private static final String ROUTING_KEY = "warning";
+    private static final String ROUTING_KEY1 = "warning";
+    private static final String ROUTING_KEY2 = "error";
     public static void main(String[] args) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(Constants.HOST);
@@ -31,7 +32,8 @@ public class LogReceiver2 {
         System.out.println("queue name: " + queueName);
         
         // 将queue与exchange进行绑定，从而获取exchange中的内容
-        channel.queueBind(queueName, Constants.EXCHANGE_NAME, ROUTING_KEY);
+        channel.queueBind(queueName, Constants.EXCHANGE_NAME, ROUTING_KEY1);
+        channel.queueBind(queueName, Constants.EXCHANGE_NAME, ROUTING_KEY2);
 
         System.out.println(" [*] 2 Waiting for messages. To exit press CTRL+C");
 
