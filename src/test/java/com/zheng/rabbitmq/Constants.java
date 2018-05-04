@@ -7,6 +7,7 @@ package com.zheng.rabbitmq;
 public class Constants {
     public static final String HOST = "zl52";
     public static final Integer PORT = 5672;
+    public static final Integer SSL_PORT = 5671;
     public static final String USER = "guest";
     public static final String PASSWORD = "guest";
     public static final String V_HOST = "/";
