@@ -1,4 +1,4 @@
-package com.zheng.rabbitmq.helloworld;
+package com.zheng.rabbitmq.tracing;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
  * @Author zhenglian
  * @Date 2018/4/24 16:45
  */
-public class QueueSender {
+public class TraceSender {
     
     public static void main(String[] args) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
@@ -24,7 +24,7 @@ public class QueueSender {
         Channel channel = connection.createChannel();
 
         channel.queueDeclare(Constants.QUEUE_NAME, false, false, false, null);
-        String message = "Hello World!";
+        String message = "Hello Trace!";
         channel.basicPublish("", Constants.QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
         System.out.println(" [x] Sent '" + message + "'");
 

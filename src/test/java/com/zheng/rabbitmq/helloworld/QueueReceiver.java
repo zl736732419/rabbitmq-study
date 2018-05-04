@@ -21,6 +21,9 @@ public class QueueReceiver {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(Constants.HOST);
         factory.setPort(Constants.PORT);
+        factory.setVirtualHost(Constants.V_HOST);
+        factory.setUsername(Constants.USER);
+        factory.setPassword(Constants.PASSWORD);
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
