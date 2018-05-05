@@ -5,7 +5,7 @@ package com.zheng.rabbitmq;
  * @Date 2018/4/24 16:50
  */
 public class Constants {
-    public static final String HOST = "zl52";
+    public static final String HOST = "zl202";
     public static final Integer PORT = 5672;
     public static final Integer SSL_PORT = 5671;
     public static final String USER = "guest";

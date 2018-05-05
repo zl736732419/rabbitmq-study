@@ -24,7 +24,7 @@ public class QueueReceiver {
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        channel.queueDeclare("destinationQueue", false, false, false, null);
+        channel.queueDeclare("sourceQueue", false, false, false, null);
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
         Consumer consumer = new DefaultConsumer(channel) {
@@ -36,6 +36,6 @@ public class QueueReceiver {
                 System.out.println(" [x] Received '" + message + "'");
             }
         };
-        channel.basicConsume("destinationQueue", true, consumer);
+        channel.basicConsume("sourceQueue", true, consumer);
     }
 }
