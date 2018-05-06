@@ -54,6 +54,7 @@ public class BatchSender {
                     }
                 }
             }
+            Thread.sleep(1000);
         }
     }
 
