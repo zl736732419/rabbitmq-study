@@ -1,4 +1,4 @@
-package com.zheng.rabbitmq.tracing;
+package com.zheng.rabbitmq.trasaction;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -8,13 +8,10 @@ import com.zheng.rabbitmq.Constants;
 import java.nio.charset.StandardCharsets;
 
 /**
- * 需要通过rabbitmqctl 将对应的vhost开启消息跟踪
- * rabbitmqctl trace_on
- * 如此在这个虚拟主机上的发送的消息都会被发布到amq.rabbitmq.trace exchange中
  * @Author zhenglian
  * @Date 2018/4/24 16:45
  */
-public class TraceSender {
+public class QueueSender {
     
     public static void main(String[] args) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
@@ -25,11 +22,19 @@ public class TraceSender {
         factory.setPassword(Constants.PASSWORD);
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
-
-        channel.queueDeclare(Constants.QUEUE_NAME, false, false, false, null);
-        String message = "Hello Trace!";
-        channel.basicPublish("", Constants.QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
-        System.out.println(" [x] Sent '" + message + "'");
+        String queueName = "transactionQueue";
+        channel.queueDeclare(queueName, false, false, false, null);
+        String message = "Hello World!";
+        // 设置信道进入事务模式
+        channel.txSelect();
+        try {
+            channel.basicPublish("", queueName, null, message.getBytes(StandardCharsets.UTF_8));
+            channel.txCommit();
+            System.out.println(" [x] Sent '" + message + "'");
+        } catch(Exception e) {
+            e.printStackTrace();
+            channel.txRollback();
+        }
 
         channel.close();
         connection.close();
