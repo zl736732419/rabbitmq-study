@@ -7,6 +7,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.ShutdownSignalException;
 import com.zheng.rabbitmq.Constants;
 
 import java.io.IOException;
@@ -37,6 +38,36 @@ public class QueueReceiver {
                     throws IOException {
                 String message = new String(body, StandardCharsets.UTF_8);
                 System.out.println(" [x] Received '" + message + "'");
+            }
+
+            @Override
+            public void handleConsumeOk(String consumerTag) {
+                super.handleConsumeOk(consumerTag);
+                System.out.println("handleConsumeOk");
+            }
+
+            @Override
+            public void handleCancelOk(String consumerTag) {
+                super.handleCancelOk(consumerTag);
+                System.out.println("handleCancelOk");
+            }
+
+            @Override
+            public void handleCancel(String consumerTag) throws IOException {
+                super.handleCancel(consumerTag);
+                System.out.println("handleCancel");
+            }
+
+            @Override
+            public void handleShutdownSignal(String consumerTag, ShutdownSignalException sig) {
+                super.handleShutdownSignal(consumerTag, sig);
+                System.out.println("handleShutdownSignal");
+            }
+
+            @Override
+            public void handleRecoverOk(String consumerTag) {
+                super.handleRecoverOk(consumerTag);
+                System.out.println("handleRecoverOk");
             }
         };
         channel.basicConsume(Constants.QUEUE_NAME, true, consumer);
