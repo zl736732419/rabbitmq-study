@@ -31,7 +31,9 @@ public class QueueSender {
         String message = "Hello World!";
 
         Map<String, Object> params = new HashMap<>();
-        params.put("x-message-ttl", 50000);
+        params.put("x-message-ttl", 50000); // 设置消息的过期时间
+        // 设置队列的ttl,如果队列在60s内还没有被任何消费者时候或者没有调用basic.get,那么队列会被自动删除
+        params.put("x-expires", 60000); 
         
         String queueName = "expireQueue";
         channel.queueDeclare(queueName, false, false, false, params);
