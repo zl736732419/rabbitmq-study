@@ -32,6 +32,7 @@ public class QueueSender {
         params.put("alternate-exchange", "alternateExt");
         channel.exchangeDeclare("normalExt", BuiltinExchangeType.DIRECT, true, false, params);
         // 备胎exchange
+        // 建议将备份交换机类型设置为fanout,这样可以避免其他路由键消息的丢失
         channel.exchangeDeclare("alternateExt", BuiltinExchangeType.FANOUT, true, false, null);
 
         channel.queueDeclare("normalQueue", true, false, false, null);
