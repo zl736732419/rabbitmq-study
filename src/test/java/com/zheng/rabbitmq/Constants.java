@@ -5,6 +5,8 @@ package com.zheng.rabbitmq;
  * @Date 2018/4/24 16:50
  */
 public class Constants {
+    public static final String SHOVEL_SOURCE = "zl201";
+    public static final String SHOVEL_DESTINATION = "zl202";
     public static final String UPSTREAM_HOST = "zl51";
     public static final String HOST = "zl52";
     public static final Integer PORT = 5672;
