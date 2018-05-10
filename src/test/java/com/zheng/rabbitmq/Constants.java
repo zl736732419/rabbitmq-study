@@ -8,7 +8,7 @@ public class Constants {
     public static final String SHOVEL_SOURCE = "zl201";
     public static final String SHOVEL_DESTINATION = "zl202";
     public static final String UPSTREAM_HOST = "zl51";
-    public static final String HOST = "zl52";
+    public static final String HOST = "zl202";
     public static final Integer PORT = 5672;
     public static final Integer SSL_PORT = 5671;
     public static final String USER = "guest";
