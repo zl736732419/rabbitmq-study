@@ -1,5 +1,7 @@
 package com.zheng.rabbitmq.queuebottleneck;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import java.io.Serializable;
 
 /**
@@ -11,7 +13,7 @@ public class Message implements Serializable {
     /**
      * 消息全局有序序号，可以通过它保证消息的有序消费
      */
-    private long seqMsg;
+    private long msgSeq;
     /**
      * 消息主体
      */
@@ -21,12 +23,12 @@ public class Message implements Serializable {
      */
     private long deliveryTag;
 
-    public long getSeqMsg() {
-        return seqMsg;
+    public long getMsgSeq() {
+        return msgSeq;
     }
 
-    public void setSeqMsg(long seqMsg) {
-        this.seqMsg = seqMsg;
+    public void setMsgSeq(long msgSeq) {
+        this.msgSeq = msgSeq;
     }
 
     public String getMsgBody() {
@@ -43,5 +45,10 @@ public class Message implements Serializable {
 
     public void setDeliveryTag(long deliveryTag) {
         this.deliveryTag = deliveryTag;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this).append(msgSeq).append(msgBody).append(deliveryTag).build();
     }
 }

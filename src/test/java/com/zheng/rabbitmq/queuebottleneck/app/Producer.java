@@ -1,9 +1,11 @@
-package com.zheng.rabbitmq.queuebottleneck;
+package com.zheng.rabbitmq.queuebottleneck.app;
 
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.MessageProperties;
+import com.zheng.rabbitmq.queuebottleneck.Message;
+import com.zheng.rabbitmq.queuebottleneck.RmqEncapsulation;
 import com.zheng.rabbitmq.queuebottleneck.queueindex.QueueIndexLoader;
 import com.zheng.rabbitmq.queuebottleneck.queueindex.RandomQueueIndexLoader;
 
@@ -44,7 +46,7 @@ public class Producer {
         Message message;
         for(int i = 0; i < 100; i++) {
             message = new Message();
-            message.setSeqMsg(i);
+            message.setMsgSeq(i);
             message.setMsgBody("rabbitmq encapsulation : " + i);
             try {
                 rmq.basicPublish(channel, exchange, rk, false, MessageProperties.PERSISTENT_TEXT_PLAIN, message, queueIndexLoader);
@@ -52,6 +54,7 @@ public class Producer {
                 e.printStackTrace();
             }
         }
+        System.out.println("消息发送完毕!");
     }
 
     public static void main(String[] args) throws Exception {

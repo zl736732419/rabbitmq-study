@@ -4,10 +4,13 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.GetResponse;
 import com.zheng.rabbitmq.Constants;
 import com.zheng.rabbitmq.queuebottleneck.queueindex.QueueIndexLoader;
+import com.zheng.rabbitmq.queuebottleneck.queueindex.RandomQueueIndexLoader;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -120,10 +123,58 @@ public class RmqEncapsulation {
      */
     public void basicPublish(Channel channel, String exchange, String routingKey, boolean mandatory,
                              AMQP.BasicProperties props, Message message, QueueIndexLoader queueIndexLoader) throws Exception {
-        int queueIndex = queueIndexLoader.queueIndex(message.getSeqMsg(), subdivisionNum);
+        int queueIndex = queueIndexLoader.queueIndex(message.getMsgSeq(), subdivisionNum);
         String rk = new StringBuilder(routingKey).append(seperator).append(queueIndex).toString();
         byte[] body = SerializationUtil.serialize(message);
         channel.basicPublish(exchange, rk, mandatory, props, body);
     }
-    
+
+    /**
+     * 拉模式消费消息
+     * 先从一个随机的队列中获取消息，如果没有取到消息再遍历队列消费消息
+     * 这样可以避免每次获取消息都需要顺序遍历队列，导致前面的队列消息一直被消费，后面队列的消息会被长久积压
+     * 这里实现的是消息的自动确认，当然也可以实现为手动确认方式，这里没有做实现
+     * 推模式实现消息的手动确认
+     * @param channel
+     * @param queue
+     * @param autoAck
+     * @throws Exception
+     */
+    public Message basicGet(Channel channel, String queue, boolean autoAck) throws Exception {
+        QueueIndexLoader loader = new RandomQueueIndexLoader();
+        int queueIndex = loader.queueIndex(0, subdivisionNum);
+        String queueName = new StringBuilder(queue).append(seperator).append(queueIndex).toString();
+        GetResponse getResponse = channel.basicGet(queueName, autoAck);
+        if (Optional.ofNullable(getResponse).isPresent()) {
+            return parseMessage(getResponse);
+        }
+        
+        for (int i = 0; i < subdivisionNum; i++) {
+            if (Objects.equals(i, queueIndex)) {
+                continue;
+            }
+            queueName = new StringBuilder(queue).append(seperator).append(i).toString();
+            getResponse = channel.basicGet(queueName, autoAck);
+            if (Optional.ofNullable(getResponse).isPresent()) {
+                return parseMessage(getResponse);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 解析消息
+     * @param getResponse
+     * @return
+     */
+    private Message parseMessage(GetResponse getResponse) {
+        if (!Optional.ofNullable(getResponse).isPresent()) {
+            return null;
+        }
+        byte[] body = getResponse.getBody();
+        Message message = SerializationUtil.deserialize(body, Message.class);
+        message.setDeliveryTag(getResponse.getEnvelope().getDeliveryTag());
+        return message;
+    }
+
 }
