@@ -4,10 +4,11 @@ import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.MessageProperties;
+import com.zheng.rabbitmq.queuebottleneck.BottleneckConstants;
 import com.zheng.rabbitmq.queuebottleneck.Message;
 import com.zheng.rabbitmq.queuebottleneck.RmqEncapsulation;
 import com.zheng.rabbitmq.queuebottleneck.queueindex.QueueIndexLoader;
-import com.zheng.rabbitmq.queuebottleneck.queueindex.RandomQueueIndexLoader;
+import com.zheng.rabbitmq.queuebottleneck.queueindex.RoundRobinQueueIndexLoader;
 
 /**
  * 生产者，发送负责发送消息到逻辑队列中
@@ -15,9 +16,10 @@ import com.zheng.rabbitmq.queuebottleneck.queueindex.RandomQueueIndexLoader;
  * @Date 2018/5/10 22:47
  */
 public class Producer {
-    private String exchange = "exchange";
-    private String queue = "queue";
-    private String rk = "rk";
+    private String exchange = BottleneckConstants.EXCHANGE;
+    private String queue = BottleneckConstants.QUEUE;
+    private String rk = BottleneckConstants.ROUTING_KEY;
+    private Integer subdivision = BottleneckConstants.SUBDIVISION;
 
     private RmqEncapsulation rmq;
     private Channel channel;
@@ -30,7 +32,7 @@ public class Producer {
     
     
     public void init() {
-        rmq = new RmqEncapsulation(4);
+        rmq = new RmqEncapsulation(subdivision);
         try {
             connection = rmq.getConnection();
             channel = connection.createChannel();
@@ -58,7 +60,7 @@ public class Producer {
     }
 
     public static void main(String[] args) throws Exception {
-        QueueIndexLoader loader = new RandomQueueIndexLoader();
+        QueueIndexLoader loader = new RoundRobinQueueIndexLoader();
         Producer producer = new Producer(loader);
         producer.init();
         producer.send();

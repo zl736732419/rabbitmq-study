@@ -20,6 +20,7 @@ public class Message implements Serializable {
     private String msgBody;
     /**
      * 记录消息的deliveryTag,在消费者端消费时填入
+     * 主要是为了实现消息确认时需要使用
      */
     private long deliveryTag;
 
@@ -49,6 +50,10 @@ public class Message implements Serializable {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this).append(msgSeq).append(msgBody).append(deliveryTag).build();
+        return new ToStringBuilder(this)
+                .append("msgSeq", msgSeq)
+                .append("msgBody", msgBody)
+                .append("deliveryTag", deliveryTag)
+                .build();
     }
 }

@@ -4,14 +4,21 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.DefaultConsumer;
+import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.GetResponse;
 import com.zheng.rabbitmq.Constants;
 import com.zheng.rabbitmq.queuebottleneck.queueindex.QueueIndexLoader;
 import com.zheng.rabbitmq.queuebottleneck.queueindex.RandomQueueIndexLoader;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -160,6 +167,106 @@ public class RmqEncapsulation {
             }
         }
         return null;
+    }
+
+    /**
+     * 异步监听消费,这里是实现消息的有序消费，需要生产者采用RoundRobinQueueIndexLoader
+     * @param channel
+     * @param queue
+     * @param autoAck
+     * @param consumerTag
+     * @param callback
+     * @throws Exception
+     */
+    public void basicConsume(Channel channel, String queue, boolean autoAck, String consumerTag, IMsgCallback callback) throws Exception {
+        Map<Integer, BlockingQueue<Message>> queueMap = new HashMap<>();
+        // 将rmq消息存入缓存
+        startConsume(channel, queue, autoAck, consumerTag, queueMap);
+        int i = 0;
+        BlockingQueue<Message> cache;
+        Message message;
+        int index;
+        while (true) {
+            index = i % subdivisionNum;
+            cache = queueMap.get(index);
+            // 取出的时候就已经从队列中消费出来了
+            message = cache.peek();
+            if (Optional.ofNullable(message).isPresent()) {
+                EnumConsumeStatus consumeStatus = callback.callback(message);
+                cache.remove(message);
+                if (Objects.equals(consumeStatus, EnumConsumeStatus.SUCCESS)) {
+                    // 如果非自动确认，需要进行手动确认
+                    if (!autoAck) {
+                        channel.basicAck(message.getDeliveryTag(), false);
+                    }
+                } else {
+                    if (!autoAck) {
+                        // 如果重新入队很可能会打破消息的顺序，所以这里不能让其入队，可以在生产者端增加publisher confirm机制处理该类消息
+                        channel.basicReject(message.getDeliveryTag(), false);
+                    }
+                }
+                i++;
+                // 这里考虑如果无限增大i,最终会出现溢出问题
+                if (Objects.equals(i, subdivisionNum)) {
+                    i = 0;
+                }
+            } else {
+                // 如果队列为空，则表示整个逻辑队列为空或者消息已经被消费完了，所以需要等待一段时间在处理
+                System.out.println("current queue is empty!");
+                TimeUnit.MILLISECONDS.sleep(500);
+            }
+        }
+        
+    }
+    
+    /**
+     * 异步监听器模式将rmq中的消息存入缓存队列
+     * 这里
+     * @param channel
+     * @param queue
+     * @throws Exception
+     */
+    public void startConsume(Channel channel, String queue, boolean autoAck, String consumerTag, 
+                             Map<Integer, BlockingQueue<Message>> queueMap) throws Exception {
+        // 将各个队列的消息分别存放到不同的缓冲队列中，这里主要是为了实现客户端顺序消费
+        String queueName;
+        String realConsumerTag;
+        BlockingQueue<Message> cache;
+        for(int i = 0; i < subdivisionNum; i++) {
+            cache = queueMap.get(i);
+            if (!Optional.ofNullable(cache).isPresent()) {
+                cache = new ArrayBlockingQueue<>(100);
+                queueMap.put(i, cache);
+            }
+            queueName = new StringBuilder(queue).append(seperator).append(i).toString();
+            // 消费者标识需要唯一
+            realConsumerTag = new StringBuilder(consumerTag).append(seperator).append(i).toString();
+            channel.basicConsume(queueName, autoAck, realConsumerTag, new NewConsumer(channel, cache));
+        }
+    }
+
+    /**
+     * 注册监听异步消费，将队列中的消息缓存到指定的缓冲队列中
+     */
+    private static class NewConsumer extends DefaultConsumer {
+        private BlockingQueue<Message> cache;
+        
+        public NewConsumer(Channel channel, BlockingQueue<Message> cache) {
+            super(channel);
+            this.cache = cache;
+        }
+
+        @Override
+        public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, 
+                                   byte[] body) throws IOException {
+            long deliveryTag = envelope.getDeliveryTag();
+            Message message = SerializationUtil.deserialize(body, Message.class);
+            if (!Optional.ofNullable(message).isPresent()) {
+                return;
+            }
+            message.setDeliveryTag(deliveryTag);
+            cache.offer(message);
+        }
     }
 
     /**

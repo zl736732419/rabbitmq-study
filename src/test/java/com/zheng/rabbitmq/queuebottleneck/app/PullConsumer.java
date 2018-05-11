@@ -2,6 +2,7 @@ package com.zheng.rabbitmq.queuebottleneck.app;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
+import com.zheng.rabbitmq.queuebottleneck.BottleneckConstants;
 import com.zheng.rabbitmq.queuebottleneck.Message;
 import com.zheng.rabbitmq.queuebottleneck.RmqEncapsulation;
 
@@ -14,14 +15,15 @@ import java.util.concurrent.TimeUnit;
  * @Date 2018/5/10 23:35
  */
 public class PullConsumer {
-    private String queue = "queue";
+    private String queue = BottleneckConstants.QUEUE;
+    private Integer subdivision = BottleneckConstants.SUBDIVISION;
 
     private RmqEncapsulation rmq;
     private Channel channel;
     private Connection connection;
     
     public void init() {
-        rmq = new RmqEncapsulation(4);
+        rmq = new RmqEncapsulation(subdivision);
         try {
             connection = rmq.getConnection();
             channel = connection.createChannel();
